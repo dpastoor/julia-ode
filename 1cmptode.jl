@@ -32,3 +32,7 @@ allt = [t1, t2]
 ally = [y1, y2]
 # need y is coming out as a 2dim array so this is hack to get it to 1dim so can be a df
 df = DataFrame(TIME = allt, CONC = ally[1:length(ally)])
+
+using Gadfly
+
+plot(df, x = "TIME", y = "CONC", Geom.line)
