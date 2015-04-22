@@ -36,3 +36,7 @@ df = DataFrame(TIME = allt, CONC = ally[1:length(ally)])
 using Gadfly
 
 plot(df, x = "TIME", y = "CONC", Geom.line)
+
+
+include("pauc.jl")
+pauc(df[:TIME], df[:CONC], [0., 15.])
