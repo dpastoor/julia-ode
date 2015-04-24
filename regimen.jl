@@ -6,10 +6,21 @@ function regimen(amt,
     if(length(amt) != 1 && length(amt) != length(dose_times))
 	    error("Please supply only one amount or amounts for each dose")
     end
-   return dose_times 
+    if(length(amt) == 1)
+	amts = fill(amt, length(dose_times))
+    else 
+	amts = amt
+    end
+    
+   return (dose_times, amts) 
 end
 
-regimen(100., 3., interval= 12.)
-	
+#=
+reg1 = regimen(100., 3., interval= 12.)
+reg2 = regimen([100., 150.], 2., interval = 12.)	
+reg2[1]
+reg2[2]
+reg2[1][1]
 #should fail
 regimen([100., 100.], 3., interval = 12.)
+=#
