@@ -16,17 +16,20 @@ test_onecmpt(t, a, adot) = onecmptiv(t, a, adot, p)
 timing = [0.:0.1:reg5_12[1][end]+24.]
 timing
 reg5_12 = regimen(100., 5, interval = 12)
+
 dtime = reg5_12[1][2]
-time_slice = 0.
+time_slice = Float64[] # must define outside for loop or time_slice only defined inside will not be available ever in global scope
 for i in  1:length(timing) 
-	if timing[i] .<= dtime 
+	if timing[i] .< dtime 
 		continue
 	else 
-		time_slice = splice!(timing, 1:i-1)
+		time_slice = splice!(timing, 1:i-1) # as loop will go 1 past the last element we want only want to splice to i-1
+		push!(time_slice, dtime)
 		break
 	end
 end
 time_slice
+
 function simulate(f, a, t)
 	y = Sundials.cvode(f, a, t)
 	
