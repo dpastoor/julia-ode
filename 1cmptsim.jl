@@ -13,27 +13,30 @@ testing2
 testing
 p = [0.1] # KEL
 test_onecmpt(t, a, adot) = onecmptiv(t, a, adot, p)
-timing = [0.:0.1:reg5_12[1][end]+24.]
-timing
+conc = Array(Float64,0)
+time = Array(Float64,0)
+sample_times = [0.:0.1:reg5_12[1][end]+24.]
+sample_times
 reg5_12 = regimen(100., 5, interval = 12)
-
-dtime = reg5_12[1][2]
-time_slice = Float64[] # must define outside for loop or time_slice only defined inside will not be available ever in global scope
-for i in  1:length(timing) 
-	if timing[i] .< dtime 
-		continue
-	else 
-		time_slice = splice!(timing, 1:i-1) # as loop will go 1 past the last element we want only want to splice to i-1
-		push!(time_slice, dtime)
-		break
+for (j,amt) in enumerate(reg5_12[2])
+	dtime = (j == length(reg5_12[2]) ? sample_times[end] : reg5_12[1][j+1])
+	
+	time_slice = Float64[] # must define outside for loop or time_slice only defined inside will not be available ever in global scope
+	for i in  1:length(sample_times) 
+		if sample_times[i] .< dtime 
+			continue
+		else 
+			time_slice = splice!(sample_times, 1:i-1) # as loop will go 1 past the last element we want only want to splice to i-1
+			push!(time_slice, dtime)
+			break
+		end
 	end
+	
+	y =Sundials.cvode(test_onecmpt, [amt], time_slice)
+	append!(conc, y[1:end])
+	append!(time, time_slice)
+	
 end
+amt = [reg5_12[2][1]]
 time_slice
-
-function simulate(f, a, t)
-	y = Sundials.cvode(f, a, t)
-	
-	
-end
-
-y1 =Sundials.cvode(f1test2, a01, t1)
+conc
