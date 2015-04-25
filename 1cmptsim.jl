@@ -31,12 +31,16 @@ for (j,amt) in enumerate(reg5_12[2])
 			break
 		end
 	end
-	
+        if j == 1	
 	y =Sundials.cvode(test_onecmpt, [amt], time_slice)
+	else
+	y =Sundials.cvode(test_onecmpt, [conc[end] + amt], time_slice)
+	end
 	append!(conc, y[1:end])
 	append!(time, time_slice)
 	
 end
-amt = [reg5_12[2][1]]
-time_slice
-conc
+
+
+
+
