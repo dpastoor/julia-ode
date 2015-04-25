@@ -9,12 +9,11 @@ end
 
 
 function sim_ind(f, regimen, sample_times)
+	sample_times = copy(sample_times)
 conc = Array(Float64,0)
 time = Array(Float64,0)
-
 	for (j,amt) in enumerate(regimen[2])
 		dtime = (j == length(regimen[2]) ? sample_times[end] : regimen[1][j+1])
-		
 		time_slice = Float64[] # must define outside for loop or time_slice only defined inside will not be available ever in global scope
 		for i in  1:length(sample_times) 
 			if sample_times[i] .< dtime 
@@ -36,7 +35,6 @@ time = Array(Float64,0)
 	end
 return (time, conc)
 end
-
 reg = regimen(100., 5., interval = 12)
 p = [0.1] # KEL
 test_onecmpt(t, a, adot) = onecmptiv(t, a, adot, p)
@@ -44,11 +42,6 @@ sample_times = [0.:0.016:reg[1][end]+24.]
 
 sim_ind(test_onecmpt, reg, sample_times)
 
-#must redefine sampling times and such since modifying in place
-reg = regimen(100., 5., interval = 12)
-p = [0.1] # KEL
-test_onecmpt(t, a, adot) = onecmptiv(t, a, adot, p)
-sample_times = [0.:0.016:reg[1][end]+24.]
 @time sim =sim_ind(test_onecmpt, reg, sample_times)
 
 
@@ -56,17 +49,15 @@ using DataFrames
 df = DataFrame(TIME = sim[1], CONC = sim[2])
 
 function all_sims()
- for i in 1:100
-reg = regimen(100., 5., interval = 12)
-p = [0.1] # KEL
-test_onecmpt(t, a, adot) = onecmptiv(t, a, adot, p)
-sample_times = [0.:0.016:reg[1][end]+24.]
-
-sim =sim_ind(test_onecmpt, reg, sample_times)
-
-df = DataFrame(TIME = sim[1], CONC = sim[2])
-df[:i] = i
-println(head(df))
+	reg = regimen(100., 5., interval = 12)
+	p = [0.1] # KEL
+	test_onecmpt(t, a, adot) = onecmptiv(t, a, adot, p)
+	sample_times = [0.:0.016:reg[1][end]+24.]
+	for i in 1:100
+		sim =sim_ind(test_onecmpt, reg, sample_times)
+		df = DataFrame(TIME = sim[1], CONC = sim[2])
+		df[:i] = i
+		println(head(df))
 	end
 end
 all_sims()
