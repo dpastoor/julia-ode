@@ -2,7 +2,7 @@
 using Sundials
 include("regimen.jl")
 
-function onecmptiv(t, a, adot, p)
+@everywhere function onecmptiv(t, a, adot, p)
 	# p1 = KEL	
         adot[1] = -p[1]*a[1]
 end
@@ -11,15 +11,15 @@ testing
 testing2 = splice!(testing, 1:2)
 testing2
 testing
+@everywhere function sim_ind(regimen)
 p = [0.1] # KEL
-function sim_ind(regimen)
 test_onecmpt(t, a, adot) = onecmptiv(t, a, adot, p)
 conc = Array(Float64,0)
 time = Array(Float64,0)
-sample_times = [0.:0.016:reg5_12[1][end]+24.]
+sample_times = [0.:0.016:regimen[1][end]+24.]
 
 	for (j,amt) in enumerate(regimen[2])
-		dtime = (j == length(regimen[2]) ? sample_times[end] : reg5_12[1][j+1])
+		dtime = (j == length(regimen[2]) ? sample_times[end] : regimen[1][j+1])
 		
 		time_slice = Float64[] # must define outside for loop or time_slice only defined inside will not be available ever in global scope
 		for i in  1:length(sample_times) 
@@ -45,14 +45,16 @@ end
 regimen(100., 5, interval = 12)
 sim_ind(regimen(100., 5, interval = 12))
 function all_sims()
-	for i in 1:100
+ for i in 1:100
 		sim_ind(regimen(100., 5, interval = 12))
 	end
 end
+all_sims()
 @time sim_ind(regimen(100., 5, interval = 12))
 @time all_sims()
 # need y is coming out as a 2dim array so this is hack to get it to 1dim so can be a df
 df = DataFrame(TIME = time, CONC = conc)
-1/60
-
-
+# in order to take advantage of parallelization need to launch julia via
+# julia -p 4 (or however many processors on that comp)
+M = [regimen(100., 5, interval = 12)for i=1:100]
+@time pmap(sim_ind, M)
